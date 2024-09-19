@@ -12,6 +12,7 @@
      justify-content: space-between;
      align-items: center;
      margin-bottom: 20px;
+     color: #333;
 }
 
 .createButton {
@@ -44,6 +45,7 @@
      border: 1px solid #ddd;
      padding: 8px;
      text-align: left;
+     color: #333;
 }
 
 .table th {

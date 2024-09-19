@@ -4,6 +4,8 @@ import styles from '../Styles/Pedidos.module.css';
 
 const Pedidos = () => {
   const [pedidos, setPedidos] = useState([]);
+  const [filteredPedidos, setFilteredPedidos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingPedido, setEditingPedido] = useState(null);
@@ -27,6 +29,8 @@ const Pedidos = () => {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [sortField, setSortField] = useState(null); 
+const [sortAscending, setSortAscending] = useState(true); 
 
   const token = localStorage.getItem('token');
 
@@ -52,6 +56,7 @@ const Pedidos = () => {
         setClients(clientsRes.data);
         setItemsOrdem(itemsRes.data);
         setProducts(productsRes.data);
+        setFilteredPedidos(pedidosRes.data);
       } catch (err) {
         setError('Erro ao carregar dados');
       } finally {
@@ -62,19 +67,38 @@ const Pedidos = () => {
     fetchData();
   }, []);
 
+  
+
   const formatDate = (date) => date ? new Date(date).toISOString() : '';
 
   const calculateTotalValue = (items, discount) => {
     const total = items.reduce((total, item) => total + (item.quantity * item.itemValue), 0);
-    return total - (total * (discount / 100)); // Aplica o desconto percentual
+    return total - (total * (discount / 100)); 
   };
+
+  const handleSort = (field) => {
+  setSortField(field);
+  setSortAscending(!sortAscending); 
+
+  const sortedPedidos = [...pedidos].sort((a, b) => {
+    if (a[field] < b[field]) {
+      return sortAscending ? -1 : 1;
+    }
+    if (a[field] > b[field]) {
+      return sortAscending ? 1 : -1;
+    }
+    return 0;
+  });
+
+  setPedidos(sortedPedidos);
+};
 
   const handleInputChange = (field, value) => {
     setEditingPedido(prev => {
       const updatedPedido = { ...prev, [field]: value };
       return {
         ...updatedPedido,
-        totalValue: calculateTotalValue(updatedPedido.items, updatedPedido.discount) // Atualiza o totalValue
+        totalValue: calculateTotalValue(updatedPedido.items, updatedPedido.discount) 
       };
     });
   };
@@ -84,7 +108,7 @@ const Pedidos = () => {
       const updatedPedido = { ...prev, [field]: value };
       return {
         ...updatedPedido,
-        totalValue: calculateTotalValue(updatedPedido.items, updatedPedido.discount) // Atualiza o totalValue
+        totalValue: calculateTotalValue(updatedPedido.items, updatedPedido.discount) 
       };
     });
   };
@@ -135,10 +159,8 @@ const Pedidos = () => {
 
   const handleSave = async (pedidoId) => {
   try {
-    // Limpa erros anteriores
     setFieldErrors({});
 
-    // Valida os campos
     const errors = {};
     if (!editingPedido.description) errors.description = 'Descrição é obrigatória';
     if (!editingPedido.fkClientId) errors.fkClientId = 'Cliente é obrigatório';
@@ -148,7 +170,6 @@ const Pedidos = () => {
     if (!editingPedido.state) errors.state = 'Estado é obrigatório';
     if (editingPedido.nInstallments < 1 || editingPedido.nInstallments > 36) errors.nInstallments = 'Número de parcelas deve estar entre 1 e 36';
     
-    // Se houver erros, atualize o estado e não envie a requisição
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -164,7 +185,7 @@ const Pedidos = () => {
     const response = await axios.get('http://localhost:5188/Order', axiosConfig);
     setPedidos(response.data);
     setEditingPedido(null);
-    setShowForm(true);  // Não feche o modal
+    setShowForm(true);
     setSuccessMessage('Pedido salvo com sucesso!');
   } catch (err) {
     setError('Erro ao salvar pedido');
@@ -189,10 +210,7 @@ const Pedidos = () => {
 
   const handleCreate = async () => {
   try {
-    // Limpa erros anteriores
     setFieldErrors({});
-
-    // Valida os campos
     const errors = {};
     if (!newPedido.description) errors.description = 'Descrição é obrigatória';
     if (!newPedido.fkClientId) errors.fkClientId = 'Cliente é obrigatório';
@@ -201,8 +219,6 @@ const Pedidos = () => {
     if (newPedido.expectedDeliveryDate < newPedido.shippingDate) errors.expectedDeliveryDate = 'Data de entrega prevista não pode ser menor que a data de envio';
     if (!newPedido.state) errors.state = 'Estado é obrigatório';
     if (newPedido.nInstallments < 1 || newPedido.nInstallments > 36) errors.nInstallments = 'Número de parcelas deve estar entre 1 e 36';
-    
-    // Se houver erros, atualize o estado e não envie a requisição
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -240,7 +256,7 @@ const Pedidos = () => {
       fkClientId: '',
       items: []
     });
-    setShowForm(true);  // Não feche o modal
+    setShowForm(true);
     setSuccessMessage('Pedido criado com sucesso!');
   } catch (err) {
     setError('Erro ao criar pedido');
@@ -288,6 +304,20 @@ const Pedidos = () => {
             </div>
 
             <div className={styles.form}>
+              
+<label>
+  Cliente
+  <select
+    value={editingPedido ? editingPedido.fkClientId : newPedido.fkClientId}
+    onChange={(e) => (editingPedido ? handleInputChange('fkClientId', e.target.value) : handleNewInputChange('fkClientId', e.target.value))}
+  >
+    <option value="">Selecione um Cliente</option>
+    {clients.map(client => (
+      <option key={client.id} value={client.id}>{client.name}</option>
+    ))}
+  </select>
+  {fieldErrors.fkClientId && <span className={styles.error}>{fieldErrors.fkClientId}</span>}
+</label>
               <h3>Itens do Pedido</h3>
               {editingPedido ? (
                 editingPedido.items.map((item, index) => (
@@ -346,13 +376,12 @@ const Pedidos = () => {
     onChange={(e) => {
       const value = e.target.value;
 
-      // Permitir apenas números entre 0 e 100, ou vazio para permitir edição temporária
+      // Permitir apenas números entre 0 e 100
       if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
         editingPedido ? handleInputChange('discount', value) : handleNewInputChange('discount', value);
       }
     }}
     onBlur={(e) => {
-      // Garante que o valor final seja entre 0 e 100 ao sair do campo
       let finalValue = Number(e.target.value);
       if (finalValue < 0) finalValue = 0;
       if (finalValue > 100) finalValue = 100;
@@ -362,20 +391,7 @@ const Pedidos = () => {
   />
 </label>
 
-
-<label>
-  Cliente
-  <select
-    value={editingPedido ? editingPedido.fkClientId : newPedido.fkClientId}
-    onChange={(e) => (editingPedido ? handleInputChange('fkClientId', e.target.value) : handleNewInputChange('fkClientId', e.target.value))}
-  >
-    <option value="">Selecione um Cliente</option>
-    {clients.map(client => (
-      <option key={client.id} value={client.id}>{client.name}</option>
-    ))}
-  </select>
-  {fieldErrors.fkClientId && <span className={styles.error}>{fieldErrors.fkClientId}</span>}
-</label>
+<h3>Total: {editingPedido ? calculateTotalValue(editingPedido.items, editingPedido.discount) : calculateTotalValue(newPedido.items, newPedido.discount)}</h3>
 
               
 <label>
@@ -433,7 +449,7 @@ const Pedidos = () => {
       const value = e.target.value;
 
       // Verifica se o valor é um número entre 1 e 36
-      if (/^\d*$/.test(value)) { // Permite apenas dígitos
+      if (/^\d*$/.test(value)) {
         const parsedValue = parseInt(value, 10);
         if (!isNaN(parsedValue) && parsedValue <= 36 && parsedValue >= 1) {
           if (editingPedido) {
@@ -442,7 +458,6 @@ const Pedidos = () => {
             handleNewInputChange('nInstallments', value);
           }
         } else if (value === '') {
-          // Se o campo estiver vazio, atualiza normalmente para permitir a remoção do valor
           if (editingPedido) {
             handleInputChange('nInstallments', value);
           } else {
@@ -465,13 +480,6 @@ const Pedidos = () => {
   />
   {fieldErrors.description && <span className={styles.error}>{fieldErrors.description}</span>}
 </label>
-              
-
-              
-
-             
-              <h3>Total: {editingPedido ? calculateTotalValue(editingPedido.items, editingPedido.discount) : calculateTotalValue(newPedido.items, newPedido.discount)}</h3>
-
               <button className={styles.saveButton} onClick={editingPedido ? () => handleSave(editingPedido.id) : handleCreate}>
                 {editingPedido ? 'Salvar' : 'Criar'}
               </button>
@@ -479,7 +487,7 @@ const Pedidos = () => {
           </div>
         </div>
       )}
-
+<div className={styles.tableContainer}>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -489,7 +497,11 @@ const Pedidos = () => {
             <th>Estado</th>
             <th>Parcelas</th>
             <th>Cliente</th>
-            <th>Total{" (R$)"}</th>
+            <th>
+      <button onClick={() => handleSort('totalValue')}>
+        Total {'(R$)'} {sortField === 'description' && (sortAscending ? '⬆️' : '⬇️')}
+      </button>
+    </th>
             <th>Itens do pedido</th>
             
             <th>Ações</th>
@@ -520,6 +532,7 @@ const Pedidos = () => {
           ))}
         </tbody>
       </table>
+      </div>
 
       {confirmDelete && (
         <div className={styles.overlay}>

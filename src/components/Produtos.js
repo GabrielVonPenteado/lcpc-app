@@ -20,7 +20,7 @@ const Produtos = () => {
     length: '',
   });
   const [editingProduct, setEditingProduct] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false); // Controle do modo de edição
+  const [isEditMode, setIsEditMode] = useState(false);
   const [confirmDeleteProduct, setConfirmDeleteProduct] = useState(null);
   const [validationError, setValidationError] = useState('');
 

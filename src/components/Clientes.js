@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
-import InputMask from 'react-input-mask'; // Importar a biblioteca
+import InputMask from 'react-input-mask'; 
 import styles from '../Styles/Clientes.module.css';
 
-Modal.setAppElement('#root'); // Ajuste para o id do elemento root no seu HTML
+Modal.setAppElement('#root');
 
 const Clientes = () => {
   const [clients, setClients] = useState([]);
@@ -16,14 +16,14 @@ const Clientes = () => {
   const [confirmDeleteIsOpen, setConfirmDeleteIsOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
   const [cities, setCities] = useState([]);
-  const [emailError, setEmailError] = useState(null); // Estado para armazenar erro de email
+  const [emailError, setEmailError] = useState(null);
 
   const token = localStorage.getItem('token');
 
-  // Definir o cabeçalho Authorization
+
   const axiosConfig = {
     headers: {
-      Authorization: `Bearer ${token}`, // Adicionar o token JWT
+      Authorization: `Bearer ${token}`, 
     },
   };
 
@@ -66,7 +66,7 @@ const Clientes = () => {
     });
     setIsEditing(!!client);
     setModalIsOpen(true);
-    setEmailError(null); // Limpar erro de email ao abrir o modal
+    setEmailError(null);
   };
 
   const closeModal = () => {
@@ -93,7 +93,6 @@ const Clientes = () => {
 
   // Função para validar o formato do email
   const isValidEmail = (email) => {
-    // Expressão regular para validação de email
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(email);
   };
@@ -105,7 +104,6 @@ const Clientes = () => {
     }
 
     try {
-      // Remover máscara dos campos antes de enviar
       const cleanedClient = {
         ...currentClient,
         phone: removeMask(currentClient.phone),
@@ -186,7 +184,6 @@ const Clientes = () => {
           </thead>
           <tbody>
             {clients.map((client) => {
-              // Encontrar o nome da cidade usando fkCityId
               const cityName = cities.find(city => city.id === client.fkCityId)?.name || 'Não especificado';
 
               return (

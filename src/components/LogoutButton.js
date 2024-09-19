@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import ''; // Certifique-se de que o arquivo CSS está sendo importado
 
 const LogoutButton = () => {
   const navigate = useNavigate();
@@ -13,30 +14,10 @@ const LogoutButton = () => {
   };
 
   return (
-    <div style={styles.logoutButton}>
-      <button onClick={handleLogout} style={styles.button}>Logout</button>
+    <div className="logoutButton">
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
-};
-
-// Definição de estilos em CSS no mesmo arquivo usando objeto JavaScript
-const styles = {
-  logoutButton: {
-    position: 'absolute',
-    top: '10px',
-    right: '20px',
-  },
-  button: {
-    backgroundColor: '#f44336',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-  },
-  buttonHover: {
-    backgroundColor: '#d32f2f',
-  },
 };
 
 export default LogoutButton;
