@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 export const fetchOrdersReport = async (startDate, endDate, status) => {
-  const token = localStorage.getItem('token'); // Recupera o token JWT do localStorage
+  const token = localStorage.getItem('token'); 
 
   if (!token) {
     throw new Error('Token não encontrado. Faça o login novamente.');
@@ -12,7 +12,7 @@ export const fetchOrdersReport = async (startDate, endDate, status) => {
     const response = await axios.get('http://localhost:5188/Order/report', {
       params: { startDate, endDate, status },
       headers: {
-        Authorization: `Bearer ${token}` // Inclui o token no cabeçalho Authorization
+        Authorization: `Bearer ${token}` 
       }
     });
     return response.data;
